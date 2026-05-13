@@ -204,4 +204,5 @@ sudo hping3 --icmp --flood <IP_nạn_nhân>
 
 ## 👨‍💻 Tác giả
 
-Đồ án An toàn thông tin - SOC/Blue Team
+dihdyyy
+
