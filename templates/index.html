@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DDoS PCAP Analyzer | SOC/Blue Team</title>
-    <meta name="description" content="Công cụ phân tích DDoS từ file .pcap - Phát hiện SYN Flood, UDP Flood, ICMP Flood, HTTP Flood">
+    <title>DDoS Analyzer | Giám sát An toàn Mạng</title>
+    <meta name="description" content="Công cụ giám sát và phân tích DDoS thời gian thực - Phát hiện SYN Flood, UDP Flood, ICMP Flood, HTTP Flood">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -29,232 +29,233 @@
                 </div>
                 <div>
                     <h1 class="logo-text">DDoS Analyzer</h1>
-                    <p class="logo-sub">PCAP Analysis • SOC/Blue Team • Layer 3/4/7</p>
+                    <p class="logo-sub">Giám sát An toàn Mạng • SOC/Blue Team • Layer 3/4/7</p>
                 </div>
             </div>
             <div class="header-meta">
                 <span class="badge badge-version">v{{ version }}</span>
-                <span class="status-dot"></span>
-                <span class="header-status">System Online</span>
+                <span class="status-dot" id="header-status-dot"></span>
+                <span class="header-status" id="header-status-text">System Online</span>
             </div>
         </div>
     </header>
 
     <main class="main-container">
-        <!-- ═══════════════════ UPLOAD SECTION ═══════════════════ -->
-        <section id="upload-section" class="section upload-section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <span class="section-icon">📂</span>
-                    Tải file PCAP để phân tích
-                </h2>
-                <p class="section-desc">Kéo thả hoặc chọn file .pcap / .pcapng từ Wireshark</p>
-            </div>
+        <!-- ═══════════════════ MODE TABS ═══════════════════ -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" id="tab-live" data-mode="live">
+                <span class="tab-icon">📡</span>
+                <span class="tab-text">Giám sát Thời gian thực</span>
+                <span class="tab-badge live-pulse" id="tab-live-badge" style="display:none">LIVE</span>
+            </button>
+            <button class="mode-tab" id="tab-pcap" data-mode="pcap">
+                <span class="tab-icon">📂</span>
+                <span class="tab-text">Phân tích File PCAP</span>
+            </button>
+        </div>
 
-            <form id="upload-form" enctype="multipart/form-data">
-                <div class="upload-drop-zone" id="drop-zone">
-                    <div class="drop-zone-content">
-                        <div class="drop-icon">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- MODE 1: LIVE MONITORING                              -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <div id="live-mode" class="mode-content active">
+
+            <!-- Live Control Panel -->
+            <section class="section live-control-section">
+                <div class="live-control-panel">
+                    <div class="live-control-left">
+                        <div class="live-iface-wrap">
+                            <label for="live-interface">Card mạng:</label>
+                            <select id="live-interface" class="live-select">
+                                <option value="">Tự động (mặc định)</option>
+                            </select>
+                            <button class="btn-refresh-iface" id="btn-refresh-iface" title="Làm mới danh sách">🔄</button>
                         </div>
-                        <p class="drop-text">Kéo thả file .pcap vào đây</p>
-                        <p class="drop-hint">hoặc nhấn để chọn file • Tối đa 500MB</p>
-                        <input type="file" id="pcap-file" name="pcap_file" accept=".pcap,.pcapng,.cap" hidden>
+                        <div class="live-threshold-inline">
+                            <div class="threshold-mini">
+                                <span class="threshold-dot" style="background:#ef4444"></span>
+                                <label>SYN</label>
+                                <input type="number" id="live-syn" value="100" min="1">
+                            </div>
+                            <div class="threshold-mini">
+                                <span class="threshold-dot" style="background:#f97316"></span>
+                                <label>UDP</label>
+                                <input type="number" id="live-udp" value="200" min="1">
+                            </div>
+                            <div class="threshold-mini">
+                                <span class="threshold-dot" style="background:#eab308"></span>
+                                <label>ICMP</label>
+                                <input type="number" id="live-icmp" value="50" min="1">
+                            </div>
+                            <div class="threshold-mini">
+                                <span class="threshold-dot" style="background:#a855f7"></span>
+                                <label>HTTP</label>
+                                <input type="number" id="live-http" value="50" min="1">
+                            </div>
+                        </div>
                     </div>
-                    <div class="file-selected" id="file-selected" style="display:none">
-                        <span class="file-icon">📄</span>
-                        <span class="file-name" id="file-name"></span>
-                        <span class="file-size" id="file-size"></span>
-                        <button type="button" class="file-remove" id="file-remove">✕</button>
+                    <div class="live-control-right">
+                        <button class="btn-live-start" id="btn-live-start">
+                            <span class="btn-icon">▶</span>
+                            <span>Bắt đầu giám sát</span>
+                        </button>
+                        <button class="btn-live-stop" id="btn-live-stop" style="display:none">
+                            <span class="btn-icon">⏹</span>
+                            <span>Dừng giám sát</span>
+                        </button>
                     </div>
                 </div>
+            </section>
 
-                <!-- Thresholds Config -->
-                <div class="config-panel">
-                    <div class="config-header" id="config-toggle">
-                        <span>⚙️ Cấu hình ngưỡng phát hiện</span>
-                        <span class="config-arrow" id="config-arrow">▼</span>
+            <!-- Live Status Bar -->
+            <section class="section" id="live-status-section" style="display:none">
+                <div class="live-status-bar">
+                    <div class="live-status-indicator">
+                        <span class="live-dot"></span>
+                        <span class="live-status-text">ĐANG GIÁM SÁT</span>
                     </div>
-                    <div class="config-body" id="config-body">
-                        <div class="threshold-grid">
-                            <div class="threshold-item">
-                                <label for="syn_threshold">
-                                    <span class="threshold-dot" style="background:#ef4444"></span>
-                                    SYN Flood
-                                </label>
-                                <div class="threshold-input-wrap">
-                                    <input type="number" id="syn_threshold" name="syn_threshold" value="100" min="1">
-                                    <span class="threshold-unit">pkt/s</span>
-                                </div>
-                            </div>
-                            <div class="threshold-item">
-                                <label for="udp_threshold">
-                                    <span class="threshold-dot" style="background:#f97316"></span>
-                                    UDP Flood
-                                </label>
-                                <div class="threshold-input-wrap">
-                                    <input type="number" id="udp_threshold" name="udp_threshold" value="200" min="1">
-                                    <span class="threshold-unit">pkt/s</span>
-                                </div>
-                            </div>
-                            <div class="threshold-item">
-                                <label for="icmp_threshold">
-                                    <span class="threshold-dot" style="background:#eab308"></span>
-                                    ICMP Flood
-                                </label>
-                                <div class="threshold-input-wrap">
-                                    <input type="number" id="icmp_threshold" name="icmp_threshold" value="50" min="1">
-                                    <span class="threshold-unit">pkt/s</span>
-                                </div>
-                            </div>
-                            <div class="threshold-item">
-                                <label for="http_threshold">
-                                    <span class="threshold-dot" style="background:#a855f7"></span>
-                                    HTTP Flood
-                                </label>
-                                <div class="threshold-input-wrap">
-                                    <input type="number" id="http_threshold" name="http_threshold" value="50" min="1">
-                                    <span class="threshold-unit">req/s</span>
-                                </div>
-                            </div>
+                    <div class="live-status-stats">
+                        <div class="live-stat-item">
+                            <span class="live-stat-label">Thời gian:</span>
+                            <span class="live-stat-value" id="live-elapsed">0s</span>
                         </div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-analyze" id="btn-analyze">
-                    <span class="btn-icon">🔍</span>
-                    <span class="btn-text">Bắt đầu phân tích</span>
-                </button>
-            </form>
-        </section>
-
-        <!-- ═══════════════════ LOADING ═══════════════════ -->
-        <section id="loading-section" class="section loading-section" style="display:none">
-            <div class="loading-content">
-                <div class="loading-spinner"></div>
-                <h3 class="loading-title">Đang phân tích...</h3>
-                <p class="loading-desc" id="loading-status">Đọc file PCAP và phân tích packets</p>
-                <div class="loading-bar">
-                    <div class="loading-bar-fill"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══════════════════ RESULTS ═══════════════════ -->
-        <div id="results-section" style="display:none">
-
-            <!-- Risk Level Banner -->
-            <section class="section risk-banner" id="risk-banner">
-                <div class="risk-content">
-                    <div class="risk-icon" id="risk-icon">🛡️</div>
-                    <div class="risk-info">
-                        <div class="risk-label">Mức rủi ro tổng thể</div>
-                        <div class="risk-level" id="risk-level">SAFE</div>
-                        <div class="risk-desc" id="risk-desc"></div>
-                    </div>
-                    <div class="risk-stats">
-                        <div class="risk-stat">
-                            <span class="risk-stat-value" id="stat-packets">0</span>
-                            <span class="risk-stat-label">Packets</span>
-                        </div>
-                        <div class="risk-stat">
-                            <span class="risk-stat-value" id="stat-alerts">0</span>
-                            <span class="risk-stat-label">Alerts</span>
-                        </div>
-                        <div class="risk-stat">
-                            <span class="risk-stat-value" id="stat-attackers">0</span>
-                            <span class="risk-stat-label">Attackers</span>
+                        <div class="live-stat-item">
+                            <span class="live-stat-label">Interface:</span>
+                            <span class="live-stat-value" id="live-iface-name">-</span>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Overview Cards -->
-            <section class="section">
-                <div class="section-header">
-                    <h2 class="section-title"><span class="section-icon">📊</span> Tổng quan Traffic</h2>
+            <!-- Live Risk Banner -->
+            <section class="section risk-banner safe" id="live-risk-banner" style="display:none">
+                <div class="risk-content">
+                    <div class="risk-icon" id="live-risk-icon">🟢</div>
+                    <div class="risk-info">
+                        <div class="risk-label">Mức rủi ro hiện tại</div>
+                        <div class="risk-level" id="live-risk-level">SAFE</div>
+                        <div class="risk-desc" id="live-risk-desc">Không phát hiện dấu hiệu tấn công</div>
+                    </div>
+                    <div class="risk-stats">
+                        <div class="risk-stat">
+                            <span class="risk-stat-value" id="live-stat-packets">0</span>
+                            <span class="risk-stat-label">Packets</span>
+                        </div>
+                        <div class="risk-stat">
+                            <span class="risk-stat-value" id="live-stat-pps">0</span>
+                            <span class="risk-stat-label">PPS hiện tại</span>
+                        </div>
+                        <div class="risk-stat">
+                            <span class="risk-stat-value" id="live-stat-alerts">0</span>
+                            <span class="risk-stat-label">Alerts</span>
+                        </div>
+                        <div class="risk-stat">
+                            <span class="risk-stat-value" id="live-stat-ips">0</span>
+                            <span class="risk-stat-label">Source IPs</span>
+                        </div>
+                    </div>
                 </div>
+            </section>
+
+            <!-- Live Overview Cards -->
+            <section class="section" id="live-cards-section" style="display:none">
                 <div class="cards-grid">
                     <div class="stat-card">
                         <div class="stat-card-icon" style="color:#06b6d4">📦</div>
-                        <div class="stat-card-value" id="card-total-packets">0</div>
+                        <div class="stat-card-value" id="live-card-packets">0</div>
                         <div class="stat-card-label">Tổng Packets</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-icon" style="color:#10b981">📊</div>
-                        <div class="stat-card-value" id="card-total-data">0</div>
+                        <div class="stat-card-value" id="live-card-data">0 B</div>
                         <div class="stat-card-label">Tổng Dữ liệu</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-icon" style="color:#f59e0b">⚡</div>
-                        <div class="stat-card-value" id="card-avg-pps">0</div>
+                        <div class="stat-card-value" id="live-card-avg-pps">0</div>
                         <div class="stat-card-label">Avg PPS</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-icon" style="color:#ef4444">🔥</div>
-                        <div class="stat-card-value" id="card-max-pps">0</div>
+                        <div class="stat-card-value" id="live-card-max-pps">0</div>
                         <div class="stat-card-label">Max PPS</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-icon" style="color:#8b5cf6">🌐</div>
-                        <div class="stat-card-value" id="card-src-ips">0</div>
+                        <div class="stat-card-value" id="live-card-ips">0</div>
                         <div class="stat-card-label">Source IPs</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-icon" style="color:#ec4899">⏱️</div>
-                        <div class="stat-card-value" id="card-duration">0s</div>
-                        <div class="stat-card-label">Thời lượng</div>
+                        <div class="stat-card-value" id="live-card-elapsed">0s</div>
+                        <div class="stat-card-label">Thời gian</div>
                     </div>
                 </div>
             </section>
 
-            <!-- Charts Row -->
-            <section class="section">
+            <!-- Live Charts -->
+            <section class="section" id="live-charts-section" style="display:none">
                 <div class="charts-grid">
-                    <!-- Protocol Distribution -->
                     <div class="chart-card">
                         <h3 class="chart-title">🔬 Phân bố Giao thức</h3>
                         <div class="chart-container chart-container-doughnut">
-                            <canvas id="protocol-chart"></canvas>
+                            <canvas id="live-protocol-chart"></canvas>
                         </div>
-                        <div class="protocol-legend" id="protocol-legend"></div>
+                        <div class="protocol-legend" id="live-protocol-legend"></div>
                     </div>
-                    <!-- Packet Rate Timeline -->
                     <div class="chart-card chart-card-wide">
-                        <h3 class="chart-title">⚡ Packet Rate Timeline (PPS)</h3>
+                        <h3 class="chart-title">⚡ Packet Rate Real-time (PPS)</h3>
                         <div class="chart-container">
-                            <canvas id="timeline-chart"></canvas>
+                            <canvas id="live-timeline-chart"></canvas>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Alerts Section -->
-            <section class="section" id="alerts-section">
+            <!-- Live Alerts -->
+            <section class="section" id="live-alerts-section" style="display:none">
                 <div class="section-header">
-                    <h2 class="section-title"><span class="section-icon">🚨</span> Cảnh báo DDoS</h2>
-                    <span class="alert-count-badge" id="alert-count-badge">0</span>
+                    <h2 class="section-title"><span class="section-icon">🚨</span> Cảnh báo DDoS Real-time</h2>
+                    <span class="alert-count-badge" id="live-alert-count">0</span>
                 </div>
-                <div id="alerts-container"></div>
+                <div id="live-alerts-container">
+                    <div class="no-alerts-msg">
+                        <div class="msg-icon">✅</div>
+                        <div class="msg-title">CHƯA PHÁT HIỆN TẤN CÔNG</div>
+                        <div class="msg-desc">Đang giám sát... Cảnh báo sẽ hiện ngay khi phát hiện bất thường.</div>
+                    </div>
+                </div>
             </section>
 
-            <!-- Attack Summary -->
-            <section class="section" id="attack-summary-section" style="display:none">
+            <!-- Live Recent Packets -->
+            <section class="section" id="live-packets-section" style="display:none">
                 <div class="section-header">
-                    <h2 class="section-title"><span class="section-icon">📋</span> Tổng kết Tấn công</h2>
+                    <h2 class="section-title"><span class="section-icon">📋</span> Packets gần nhất</h2>
                 </div>
-                <div class="attack-cards" id="attack-cards"></div>
+                <div class="table-wrap">
+                    <table class="data-table" id="live-packets-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Source</th>
+                                <th>Destination</th>
+                                <th>Protocol</th>
+                                <th>Size</th>
+                                <th>Port</th>
+                                <th>Info</th>
+                            </tr>
+                        </thead>
+                        <tbody id="live-packets-body"></tbody>
+                    </table>
+                </div>
             </section>
 
-            <!-- Top Source IPs -->
-            <section class="section">
+            <!-- Live Top IPs -->
+            <section class="section" id="live-top-ips-section" style="display:none">
                 <div class="section-header">
                     <h2 class="section-title"><span class="section-icon">🏆</span> Top Source IPs</h2>
                 </div>
                 <div class="table-wrap">
-                    <table class="data-table" id="top-ips-table">
+                    <table class="data-table">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -262,58 +263,304 @@
                                 <th>Packets</th>
                                 <th>% Total</th>
                                 <th>Protocols</th>
-                                <th>Risk</th>
                             </tr>
                         </thead>
-                        <tbody id="top-ips-body"></tbody>
+                        <tbody id="live-top-ips-body"></tbody>
                     </table>
                 </div>
             </section>
 
-            <!-- HTTP Stats -->
-            <section class="section" id="http-section" style="display:none">
-                <div class="section-header">
-                    <h2 class="section-title"><span class="section-icon">🌐</span> HTTP Traffic (Layer 7)</h2>
+            <!-- Placeholder when not running -->
+            <section class="section" id="live-placeholder">
+                <div class="live-placeholder-content">
+                    <div class="placeholder-icon">📡</div>
+                    <h3 class="placeholder-title">Giám sát mạng thời gian thực</h3>
+                    <p class="placeholder-desc">
+                        Nhấn <strong>"Bắt đầu giám sát"</strong> để bắt gói tin trực tiếp trên card mạng.<br>
+                        Hệ thống sẽ tự động phân tích và cảnh báo DDoS ngay lập tức.<br>
+                        <span class="placeholder-note">⚠️ Cần quyền root/admin để bắt gói tin (chạy với sudo trên Linux)</span>
+                    </p>
                 </div>
-                <div class="http-grid">
-                    <div class="chart-card">
-                        <h3 class="chart-title">HTTP Methods</h3>
-                        <div class="chart-container chart-container-doughnut">
-                            <canvas id="http-methods-chart"></canvas>
+            </section>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════ -->
+        <!-- MODE 2: PCAP FILE ANALYSIS (giữ nguyên)            -->
+        <!-- ═══════════════════════════════════════════════════ -->
+        <div id="pcap-mode" class="mode-content">
+
+            <!-- Upload Section -->
+            <section id="upload-section" class="section upload-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-icon">📂</span>
+                        Tải file PCAP để phân tích
+                    </h2>
+                    <p class="section-desc">Kéo thả hoặc chọn file .pcap / .pcapng từ Wireshark</p>
+                </div>
+
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="upload-drop-zone" id="drop-zone">
+                        <div class="drop-zone-content">
+                            <div class="drop-icon">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <p class="drop-text">Kéo thả file .pcap vào đây</p>
+                            <p class="drop-hint">hoặc nhấn để chọn file • Tối đa 500MB</p>
+                            <input type="file" id="pcap-file" name="pcap_file" accept=".pcap,.pcapng,.cap" hidden>
+                        </div>
+                        <div class="file-selected" id="file-selected" style="display:none">
+                            <span class="file-icon">📄</span>
+                            <span class="file-name" id="file-name"></span>
+                            <span class="file-size" id="file-size"></span>
+                            <button type="button" class="file-remove" id="file-remove">✕</button>
                         </div>
                     </div>
-                    <div class="chart-card">
-                        <h3 class="chart-title">Top URIs</h3>
-                        <div class="table-wrap">
-                            <table class="data-table" id="http-uris-table">
-                                <thead><tr><th>URI</th><th>Count</th></tr></thead>
-                                <tbody id="http-uris-body"></tbody>
-                            </table>
+
+                    <!-- Thresholds Config -->
+                    <div class="config-panel">
+                        <div class="config-header" id="config-toggle">
+                            <span>⚙️ Cấu hình ngưỡng phát hiện</span>
+                            <span class="config-arrow" id="config-arrow">▼</span>
                         </div>
+                        <div class="config-body" id="config-body">
+                            <div class="threshold-grid">
+                                <div class="threshold-item">
+                                    <label for="syn_threshold">
+                                        <span class="threshold-dot" style="background:#ef4444"></span>
+                                        SYN Flood
+                                    </label>
+                                    <div class="threshold-input-wrap">
+                                        <input type="number" id="syn_threshold" name="syn_threshold" value="100" min="1">
+                                        <span class="threshold-unit">pkt/s</span>
+                                    </div>
+                                </div>
+                                <div class="threshold-item">
+                                    <label for="udp_threshold">
+                                        <span class="threshold-dot" style="background:#f97316"></span>
+                                        UDP Flood
+                                    </label>
+                                    <div class="threshold-input-wrap">
+                                        <input type="number" id="udp_threshold" name="udp_threshold" value="200" min="1">
+                                        <span class="threshold-unit">pkt/s</span>
+                                    </div>
+                                </div>
+                                <div class="threshold-item">
+                                    <label for="icmp_threshold">
+                                        <span class="threshold-dot" style="background:#eab308"></span>
+                                        ICMP Flood
+                                    </label>
+                                    <div class="threshold-input-wrap">
+                                        <input type="number" id="icmp_threshold" name="icmp_threshold" value="50" min="1">
+                                        <span class="threshold-unit">pkt/s</span>
+                                    </div>
+                                </div>
+                                <div class="threshold-item">
+                                    <label for="http_threshold">
+                                        <span class="threshold-dot" style="background:#a855f7"></span>
+                                        HTTP Flood
+                                    </label>
+                                    <div class="threshold-input-wrap">
+                                        <input type="number" id="http_threshold" name="http_threshold" value="50" min="1">
+                                        <span class="threshold-unit">req/s</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-analyze" id="btn-analyze">
+                        <span class="btn-icon">🔍</span>
+                        <span class="btn-text">Bắt đầu phân tích</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Loading -->
+            <section id="loading-section" class="section loading-section" style="display:none">
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <h3 class="loading-title">Đang phân tích...</h3>
+                    <p class="loading-desc" id="loading-status">Đọc file PCAP và phân tích packets</p>
+                    <div class="loading-bar">
+                        <div class="loading-bar-fill"></div>
                     </div>
                 </div>
             </section>
 
-            <!-- Download Reports -->
-            <section class="section">
-                <div class="section-header">
-                    <h2 class="section-title"><span class="section-icon">📥</span> Tải báo cáo</h2>
-                </div>
-                <div class="download-grid" id="download-grid"></div>
-            </section>
+            <!-- Results (PCAP) -->
+            <div id="results-section" style="display:none">
 
-            <!-- New Analysis -->
-            <div class="new-analysis-wrap">
-                <button class="btn-new-analysis" id="btn-new-analysis">
-                    <span>🔄</span> Phân tích file khác
-                </button>
+                <!-- Risk Level Banner -->
+                <section class="section risk-banner" id="risk-banner">
+                    <div class="risk-content">
+                        <div class="risk-icon" id="risk-icon">🛡️</div>
+                        <div class="risk-info">
+                            <div class="risk-label">Mức rủi ro tổng thể</div>
+                            <div class="risk-level" id="risk-level">SAFE</div>
+                            <div class="risk-desc" id="risk-desc"></div>
+                        </div>
+                        <div class="risk-stats">
+                            <div class="risk-stat">
+                                <span class="risk-stat-value" id="stat-packets">0</span>
+                                <span class="risk-stat-label">Packets</span>
+                            </div>
+                            <div class="risk-stat">
+                                <span class="risk-stat-value" id="stat-alerts">0</span>
+                                <span class="risk-stat-label">Alerts</span>
+                            </div>
+                            <div class="risk-stat">
+                                <span class="risk-stat-value" id="stat-attackers">0</span>
+                                <span class="risk-stat-label">Attackers</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Overview Cards -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title"><span class="section-icon">📊</span> Tổng quan Traffic</h2>
+                    </div>
+                    <div class="cards-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-icon" style="color:#06b6d4">📦</div>
+                            <div class="stat-card-value" id="card-total-packets">0</div>
+                            <div class="stat-card-label">Tổng Packets</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-icon" style="color:#10b981">📊</div>
+                            <div class="stat-card-value" id="card-total-data">0</div>
+                            <div class="stat-card-label">Tổng Dữ liệu</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-icon" style="color:#f59e0b">⚡</div>
+                            <div class="stat-card-value" id="card-avg-pps">0</div>
+                            <div class="stat-card-label">Avg PPS</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-icon" style="color:#ef4444">🔥</div>
+                            <div class="stat-card-value" id="card-max-pps">0</div>
+                            <div class="stat-card-label">Max PPS</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-icon" style="color:#8b5cf6">🌐</div>
+                            <div class="stat-card-value" id="card-src-ips">0</div>
+                            <div class="stat-card-label">Source IPs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-icon" style="color:#ec4899">⏱️</div>
+                            <div class="stat-card-value" id="card-duration">0s</div>
+                            <div class="stat-card-label">Thời lượng</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Charts Row -->
+                <section class="section">
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3 class="chart-title">🔬 Phân bố Giao thức</h3>
+                            <div class="chart-container chart-container-doughnut">
+                                <canvas id="protocol-chart"></canvas>
+                            </div>
+                            <div class="protocol-legend" id="protocol-legend"></div>
+                        </div>
+                        <div class="chart-card chart-card-wide">
+                            <h3 class="chart-title">⚡ Packet Rate Timeline (PPS)</h3>
+                            <div class="chart-container">
+                                <canvas id="timeline-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Alerts Section -->
+                <section class="section" id="alerts-section">
+                    <div class="section-header">
+                        <h2 class="section-title"><span class="section-icon">🚨</span> Cảnh báo DDoS</h2>
+                        <span class="alert-count-badge" id="alert-count-badge">0</span>
+                    </div>
+                    <div id="alerts-container"></div>
+                </section>
+
+                <!-- Attack Summary -->
+                <section class="section" id="attack-summary-section" style="display:none">
+                    <div class="section-header">
+                        <h2 class="section-title"><span class="section-icon">📋</span> Tổng kết Tấn công</h2>
+                    </div>
+                    <div class="attack-cards" id="attack-cards"></div>
+                </section>
+
+                <!-- Top Source IPs -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title"><span class="section-icon">🏆</span> Top Source IPs</h2>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table" id="top-ips-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Source IP</th>
+                                    <th>Packets</th>
+                                    <th>% Total</th>
+                                    <th>Protocols</th>
+                                    <th>Risk</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-ips-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- HTTP Stats -->
+                <section class="section" id="http-section" style="display:none">
+                    <div class="section-header">
+                        <h2 class="section-title"><span class="section-icon">🌐</span> HTTP Traffic (Layer 7)</h2>
+                    </div>
+                    <div class="http-grid">
+                        <div class="chart-card">
+                            <h3 class="chart-title">HTTP Methods</h3>
+                            <div class="chart-container chart-container-doughnut">
+                                <canvas id="http-methods-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3 class="chart-title">Top URIs</h3>
+                            <div class="table-wrap">
+                                <table class="data-table" id="http-uris-table">
+                                    <thead><tr><th>URI</th><th>Count</th></tr></thead>
+                                    <tbody id="http-uris-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Download Reports -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title"><span class="section-icon">📥</span> Tải báo cáo</h2>
+                    </div>
+                    <div class="download-grid" id="download-grid"></div>
+                </section>
+
+                <!-- New Analysis -->
+                <div class="new-analysis-wrap">
+                    <button class="btn-new-analysis" id="btn-new-analysis">
+                        <span>🔄</span> Phân tích file khác
+                    </button>
+                </div>
             </div>
         </div>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
-        <p>DDoS PCAP Analyzer v{{ version }} • SOC/Blue Team • Scapy + Flask + Chart.js</p>
+        <p>DDoS Analyzer v{{ version }} • Giám sát An toàn Mạng • SOC/Blue Team • Scapy + Flask + Chart.js</p>
     </footer>
 
     <script src="/static/js/app.js"></script>

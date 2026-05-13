@@ -2,6 +2,7 @@
 # DDoS PCAP Analyzer - Web Application (Flask)
 # ============================================================================
 # Giao diện web cho công cụ phân tích DDoS từ file .pcap
+# + Giám sát mạng thời gian thực (Live Sniffing)
 # Backend: Flask | Frontend: HTML/CSS/JS + Chart.js
 # ============================================================================
 
@@ -26,6 +27,7 @@ from analyzer.packet_parser import PcapParser
 from analyzer.statistics import TrafficStatistics
 from analyzer.detector import DDoSDetector
 from analyzer.reporter import ReportGenerator
+from analyzer.live_sniffer import LiveSniffer
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024  # 500MB max upload
@@ -39,12 +41,19 @@ os.makedirs(REPORT_DIR, exist_ok=True)
 # Lưu trữ kết quả phân tích gần nhất (in-memory)
 latest_result = {}
 
+# ── Live Sniffer Instance (singleton) ──
+live_sniffer = LiveSniffer()
+
 
 @app.route("/")
 def index():
     """Trang chính."""
     return render_template("index.html", version=config.TOOL_VERSION)
 
+
+# ═══════════════════════════════════════════════════════════════════
+# API - PCAP FILE ANALYSIS (giữ nguyên)
+# ═══════════════════════════════════════════════════════════════════
 
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
@@ -173,6 +182,81 @@ def download_report(filename):
     return send_file(filepath, as_attachment=True)
 
 
+# ═══════════════════════════════════════════════════════════════════
+# API - LIVE SNIFFING (Giám sát thời gian thực)
+# ═══════════════════════════════════════════════════════════════════
+
+@app.route("/api/live/interfaces")
+def live_interfaces():
+    """Lấy danh sách card mạng khả dụng."""
+    try:
+        ifaces = live_sniffer.get_interfaces()
+        return jsonify({"interfaces": ifaces})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/live/start", methods=["POST"])
+def live_start():
+    """Bắt đầu bắt gói tin thời gian thực."""
+    global live_sniffer
+
+    data = request.get_json(silent=True) or {}
+    interface = data.get("interface")
+
+    # Cập nhật thresholds nếu có
+    thresholds = {}
+    if "syn_threshold" in data:
+        thresholds["SYN_FLOOD"] = int(data["syn_threshold"])
+    if "udp_threshold" in data:
+        thresholds["UDP_FLOOD"] = int(data["udp_threshold"])
+    if "icmp_threshold" in data:
+        thresholds["ICMP_FLOOD"] = int(data["icmp_threshold"])
+    if "http_threshold" in data:
+        thresholds["HTTP_FLOOD"] = int(data["http_threshold"])
+
+    if thresholds:
+        live_sniffer.thresholds.update(thresholds)
+
+    result = live_sniffer.start(interface=interface)
+    return jsonify(result)
+
+
+@app.route("/api/live/stop", methods=["POST"])
+def live_stop():
+    """Dừng bắt gói tin."""
+    result = live_sniffer.stop()
+    return jsonify(result)
+
+
+@app.route("/api/live/data")
+def live_data():
+    """
+    Lấy dữ liệu live hiện tại (polling endpoint).
+    Frontend gọi mỗi 1-2 giây để cập nhật dashboard.
+    """
+    if not live_sniffer.is_running and live_sniffer.total_packets == 0:
+        return jsonify({"is_running": False, "total_packets": 0})
+
+    data = live_sniffer.get_live_data()
+    return jsonify(data)
+
+
+@app.route("/api/live/thresholds", methods=["POST"])
+def live_thresholds():
+    """Cập nhật ngưỡng detection khi đang chạy."""
+    data = request.get_json(silent=True) or {}
+    if "syn_threshold" in data:
+        live_sniffer.thresholds["SYN_FLOOD"] = int(data["syn_threshold"])
+    if "udp_threshold" in data:
+        live_sniffer.thresholds["UDP_FLOOD"] = int(data["udp_threshold"])
+    if "icmp_threshold" in data:
+        live_sniffer.thresholds["ICMP_FLOOD"] = int(data["icmp_threshold"])
+    if "http_threshold" in data:
+        live_sniffer.thresholds["HTTP_FLOOD"] = int(data["http_threshold"])
+    return jsonify({"status": "updated", "thresholds": live_sniffer.thresholds})
+
+
 def _serialize_summary(summary):
     """Chuyển đổi attack summary cho JSON serialization."""
     result = {}
@@ -186,7 +270,7 @@ def _serialize_summary(summary):
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("  DDoS PCAP Analyzer - Web UI")
+    print("  DDoS Analyzer - Web UI + Live Monitor")
     print(f"  Version {config.TOOL_VERSION}")
     print("  Mở trình duyệt tại: http://localhost:5000")
     print("=" * 60)

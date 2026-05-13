@@ -1,77 +1,97 @@
-# 🛡️ DDoS PCAP Analyzer
+# 🛡️ Hệ thống Giám sát An toàn Mạng - DDoS Analyzer
 
-> Công cụ phân tích file `.pcap` từ Wireshark để phát hiện dấu hiệu tấn công DDoS tầng 3, 4, và 7.
+> Công cụ giám sát mạng thời gian thực và phân tích file `.pcap` để phát hiện tấn công DDoS tầng 3, 4, 7.
 > Thiết kế theo hướng SOC/Blue Team phục vụ đồ án An toàn thông tin.
 
-## 🎯 Tính năng
+## 🎯 Tính năng chính
 
+### 📡 Chế độ 1: Giám sát thời gian thực (Live Monitor)
 | Tính năng | Chi tiết |
 |---|---|
+| **Bắt gói tin trực tiếp** | Sử dụng `tshark` (Wireshark CLI) để sniff trên card mạng |
+| **Dashboard real-time** | Cập nhật biểu đồ PPS, giao thức, cảnh báo mỗi 1.5 giây |
+| **Phát hiện DDoS tức thì** | Cảnh báo ngay khi phát hiện SYN/UDP/ICMP/HTTP Flood |
+| **Chọn card mạng** | Hỗ trợ eth0, wlan0, hoặc bất kỳ interface nào |
+| **Không cần file .pcap** | Giám sát trực tiếp, không cần lưu file trước |
+
+### 📂 Chế độ 2: Phân tích file PCAP
+| Tính năng | Chi tiết |
+|---|---|
+| **Upload file .pcap** | Kéo thả hoặc chọn file từ Wireshark |
 | **Phân tích giao thức** | TCP, UDP, ICMP, HTTP (Layer 3/4/7) |
-| **Phát hiện tấn công** | SYN Flood, UDP Flood, ICMP Flood, HTTP Request Flood |
+| **Phát hiện tấn công** | SYN Flood, UDP Flood, ICMP Flood, HTTP Flood |
 | **Thống kê IP** | Top source IPs với phân bố giao thức và đánh giá rủi ro |
-| **Tốc độ Packet** | Hiển thị PPS (packets/second) với sparkline timeline |
-| **Cảnh báo Real-time** | Alerts trên terminal với severity: CRITICAL/HIGH/MEDIUM/LOW |
 | **Báo cáo** | Xuất JSON và CSV (alerts, top IPs, statistics) |
-| **Dashboard CLI** | Giao diện terminal trực quan với Rich (màu sắc, bảng, biểu đồ) |
+
+### Chung
+| Tính năng | Chi tiết |
+|---|---|
+| **Tốc độ Packet** | Biểu đồ PPS (packets/second) real-time |
+| **Cảnh báo** | Alerts với severity: CRITICAL / HIGH / MEDIUM / LOW |
+| **Web Dashboard** | Giao diện web hiện đại, dark theme, Chart.js |
+| **CLI Dashboard** | Giao diện terminal với Rich (màu sắc, bảng) |
 
 ## 📋 Yêu cầu hệ thống
 
 - **Python** >= 3.8
-- **Windows** (đã test) / Linux / macOS
-- **Npcap** (thường đi kèm khi cài Wireshark) - [Tải tại đây](https://npcap.com/)
+- **Kali Linux** (khuyến nghị) / Ubuntu / Windows / macOS
+- **tshark** (đi kèm khi cài Wireshark) — cần cho chế độ Live Monitor
+- **Quyền root/sudo** — cần để bắt gói tin trên card mạng
 
-## 🚀 Cài đặt
+## 🚀 Cài đặt trên Kali Linux
 
 ```bash
 # 1. Clone/tải về thư mục dự án
-cd ddos-analyzer
+cd ~/giamsatantoanmang
 
-# 2. Cài đặt thư viện cần thiết
-pip install -r requirements.txt
+# 2. Cài đặt thư viện Python
+pip install -r requirements.txt --break-system-packages
 
-# 3. Kiểm tra cài đặt
-python main.py --help
+# 3. Kiểm tra tshark đã cài chưa
+tshark --version
+
+# 4. Nếu chưa có tshark:
+sudo apt update && sudo apt install -y tshark
 ```
 
 ## 📖 Cách sử dụng
 
-### Cơ bản
+### Chạy Web Dashboard (khuyến nghị)
+
+```bash
+# Chạy với quyền root để bắt gói tin
+sudo python3 app.py
+```
+
+Mở trình duyệt tại: **http://localhost:5000**
+
+#### Chế độ Live Monitor:
+1. Chọn tab **📡 Giám sát Thời gian thực**
+2. Chọn card mạng (eth0, wlan0, ...)
+3. Tùy chỉnh ngưỡng phát hiện nếu cần
+4. Nhấn **"Bắt đầu giám sát"**
+5. Dashboard tự động cập nhật, cảnh báo hiện ngay khi phát hiện tấn công
+
+#### Chế độ PCAP:
+1. Chọn tab **📂 Phân tích File PCAP**
+2. Kéo thả file .pcap vào vùng upload
+3. Nhấn **"Bắt đầu phân tích"**
+4. Xem kết quả và tải báo cáo
+
+### Chạy CLI (dòng lệnh)
+
 ```bash
 # Phân tích file pcap
-python main.py capture.pcap
-```
+sudo python3 main.py capture.pcap
 
-### Tùy chỉnh ngưỡng phát hiện
-```bash
-# Giảm ngưỡng SYN Flood xuống 50 packets/giây
-python main.py capture.pcap --syn-threshold 50
+# Tùy chỉnh ngưỡng
+sudo python3 main.py capture.pcap --syn-threshold 50 --udp-threshold 100
 
-# Tùy chỉnh tất cả ngưỡng
-python main.py capture.pcap --syn-threshold 50 --udp-threshold 100 --icmp-threshold 30 --http-threshold 25
-```
-
-### Tùy chỉnh đầu ra
-```bash
 # Chỉ xuất JSON report
-python main.py capture.pcap --format json
-
-# Chỉ xuất CSV
-python main.py capture.pcap --format csv
+sudo python3 main.py capture.pcap --format json
 
 # Chỉ định thư mục output
-python main.py capture.pcap --output-dir ./my_reports
-
-# Chỉ hiển thị dashboard, không xuất report
-python main.py capture.pcap --no-report
-
-# Chỉ xuất report, không hiển thị dashboard
-python main.py capture.pcap --no-dashboard
-```
-
-### Hiển thị nhiều Top IPs
-```bash
-python main.py capture.pcap --top 20
+sudo python3 main.py capture.pcap --output-dir ./my_reports
 ```
 
 ## ⚙️ Cấu hình ngưỡng phát hiện
@@ -85,6 +105,8 @@ Các ngưỡng mặc định trong `config.py`:
 | ICMP Flood | 50 pkt/s | ICMP packets/giây từ 1 IP |
 | HTTP Flood | 50 req/s | HTTP requests/giây từ 1 IP |
 
+> 💡 Có thể tùy chỉnh ngưỡng trực tiếp trên giao diện web trước khi bắt đầu giám sát.
+
 ### Mức độ cảnh báo (Severity)
 
 | Mức độ | Tỷ lệ so với ngưỡng |
@@ -97,85 +119,88 @@ Các ngưỡng mặc định trong `config.py`:
 ## 📁 Cấu trúc dự án
 
 ```
-ddos-analyzer/
-├── main.py                  # Entry point - CLI interface
+giamsatantoanmang/
+├── app.py                   # Web server (Flask) - Live Monitor + PCAP
+├── main.py                  # CLI interface
 ├── config.py                # Cấu hình ngưỡng phát hiện
-├── requirements.txt         # Thư viện cần thiết
+├── requirements.txt         # Thư viện Python
 ├── README.md                # Hướng dẫn sử dụng
 ├── analyzer/                # Package phân tích
 │   ├── __init__.py
-│   ├── packet_parser.py     # Đọc & parse pcap (Scapy)
+│   ├── live_sniffer.py      # ⭐ Bắt gói tin real-time (tshark)
+│   ├── packet_parser.py     # Đọc & parse file pcap (Scapy)
 │   ├── statistics.py        # Thống kê traffic
 │   ├── detector.py          # Engine phát hiện DDoS
 │   ├── dashboard.py         # CLI Dashboard (Rich)
 │   └── reporter.py          # Xuất báo cáo JSON/CSV
-└── reports/                 # Thư mục chứa report (tự tạo)
-    ├── ddos_report_*.json
-    ├── ddos_alerts_*.csv
-    ├── ddos_top_ips_*.csv
-    └── ddos_statistics_*.csv
+├── templates/
+│   └── index.html           # Giao diện web
+├── static/
+│   ├── css/style.css        # Giao diện dark theme
+│   └── js/app.js            # Frontend logic
+├── uploads/                 # File upload tạm
+└── reports/                 # Báo cáo xuất ra
 ```
 
-## 🔍 Giải thích phương pháp phát hiện
+## 🔍 Phương pháp phát hiện
 
 ### SYN Flood (Layer 4)
-- **Nguyên lý**: Đếm số TCP SYN packets (không có ACK flag) từ mỗi source IP trong mỗi giây
-- **Dấu hiệu**: Lượng SYN packets/giây từ 1 IP vượt ngưỡng bất thường
-- **Mục đích tấn công**: Làm cạn kiệt bảng kết nối (connection table) của server
+- **Nguyên lý**: Đếm TCP SYN packets (không có ACK) từ mỗi source IP mỗi giây
+- **Dấu hiệu**: Lượng SYN packets/giây từ 1 IP vượt ngưỡng
+- **Mục đích tấn công**: Làm cạn kiệt bảng kết nối của server
 
 ### UDP Flood (Layer 4)
-- **Nguyên lý**: Đếm số UDP packets từ mỗi source IP trong mỗi giây
-- **Dấu hiệu**: Lượng UDP packets/giây từ 1 IP vượt ngưỡng bất thường
-- **Mục đích tấn công**: Gây nghẽn bandwidth với traffic UDP connectionless
+- **Nguyên lý**: Đếm UDP packets từ mỗi source IP mỗi giây
+- **Dấu hiệu**: Lượng UDP packets/giây từ 1 IP vượt ngưỡng
+- **Mục đích tấn công**: Gây nghẽn bandwidth với traffic UDP
 
 ### ICMP Flood (Layer 3)
-- **Nguyên lý**: Đếm số ICMP packets (ping) từ mỗi source IP trong mỗi giây
-- **Dấu hiệu**: Lượng ICMP packets/giây từ 1 IP vượt ngưỡng bất thường
+- **Nguyên lý**: Đếm ICMP packets (ping) từ mỗi source IP mỗi giây
+- **Dấu hiệu**: Lượng ICMP packets/giây từ 1 IP vượt ngưỡng
 - **Mục đích tấn công**: Gây nghẽn bandwidth bằng ICMP Echo Request
 
 ### HTTP Flood (Layer 7)
-- **Nguyên lý**: Đếm số HTTP requests (GET, POST, ...) từ mỗi source IP trong mỗi giây
-- **Dấu hiệu**: Lượng HTTP requests/giây từ 1 IP vượt ngưỡng bất thường
-- **Mục đích tấn công**: Quá tải web server với requests hợp lệ (khó lọc)
-
-## 📊 Báo cáo đầu ra
-
-### JSON Report
-File `ddos_report_<timestamp>.json` chứa:
-- Metadata (thời gian phân tích, file name, tool version)
-- Thống kê capture (tổng packets, duration, unique IPs, ...)
-- Phân bố giao thức (TCP/UDP/ICMP/HTTP)
-- Packet rate (avg, max, min PPS)
-- Top source IPs
-- Kết quả phát hiện & danh sách alerts
-- Đánh giá rủi ro tổng thể
-
-### CSV Reports
-- `ddos_alerts_<timestamp>.csv` - Danh sách tất cả cảnh báo
-- `ddos_top_ips_<timestamp>.csv` - Top source IPs
-- `ddos_statistics_<timestamp>.csv` - Thống kê tổng quan
+- **Nguyên lý**: Đếm HTTP requests (GET, POST) từ mỗi source IP mỗi giây
+- **Dấu hiệu**: Lượng HTTP requests/giây từ 1 IP vượt ngưỡng
+- **Mục đích tấn công**: Quá tải web server với requests hợp lệ
 
 ## 🛠️ Công nghệ sử dụng
 
-| Thư viện | Mục đích |
+| Công nghệ | Mục đích |
 |---|---|
-| [Scapy](https://scapy.net/) | Đọc file pcap, phân tích packet ở mức low-level |
-| [Rich](https://github.com/Textualize/rich) | CLI dashboard đẹp mắt với bảng, màu sắc, progress bar |
+| [tshark](https://www.wireshark.org/docs/man-pages/tshark.html) | Bắt gói tin thời gian thực (Live Monitor) |
+| [Scapy](https://scapy.net/) | Đọc file pcap, phân tích packet |
+| [Flask](https://flask.palletsprojects.com/) | Web server backend |
+| [Chart.js](https://www.chartjs.org/) | Biểu đồ trực quan trên web |
+| [Rich](https://github.com/Textualize/rich) | CLI dashboard đẹp mắt |
 
-## 📝 Tạo file pcap mẫu
+## 🧪 Kiểm thử tấn công DDoS (Lab)
 
-### Cách 1: Dùng Wireshark
-1. Mở Wireshark -> Capture -> Start
-2. Thực hiện các hoạt động mạng
-3. File -> Save As -> Chọn định dạng `.pcap`
+> ⚠️ Chỉ thực hiện trong môi trường lab! Không tấn công hệ thống thật!
 
-### Cách 2: Dùng tcpdump (Linux)
+### Mô hình lab gợi ý (VMware)
+- **Máy tấn công**: Kali Linux
+- **Máy nạn nhân**: Metasploitable / Ubuntu Server
+- **Mạng**: VMnet (Host-only hoặc NAT)
+
+### Tạo tấn công mẫu bằng hping3 (trên Kali)
+
 ```bash
-sudo tcpdump -i eth0 -w capture.pcap -c 10000
+# SYN Flood
+sudo hping3 -S --flood -V -p 80 <IP_nạn_nhân>
+
+# UDP Flood
+sudo hping3 --udp --flood -p 53 <IP_nạn_nhân>
+
+# ICMP Flood
+sudo hping3 --icmp --flood <IP_nạn_nhân>
 ```
 
-### Cách 3: Tải pcap mẫu
-- [Wireshark Sample Captures](https://wiki.wireshark.org/SampleCaptures)
+### Quy trình kiểm thử
+1. Mở web dashboard: `sudo python3 app.py`
+2. Chọn tab **📡 Giám sát Thời gian thực** → Bắt đầu giám sát
+3. Mở terminal khác, chạy hping3 tấn công máy nạn nhân
+4. Quan sát dashboard: biểu đồ PPS tăng đột biến, cảnh báo DDoS xuất hiện
 
 ## 👨‍💻 Tác giả
 
