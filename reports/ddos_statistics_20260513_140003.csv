@@ -1,0 +1,36 @@
+metric,value
+tool_name,DDoS PCAP Analyzer
+tool_version,1.0.0
+report_time,2026-05-13 14:00:03
+analyzed_file,sample_ddos.pcap
+total_packets,3850
+total_bytes,1070922
+capture_duration_s,49.5
+unique_src_ips,24
+unique_dst_ips,1
+avg_pps,87.5
+max_pps,507
+overall_risk_level,MEDIUM
+total_alerts,15
+protocol_TCP_count,2200
+protocol_TCP_pct,57.14%
+protocol_UDP_count,1200
+protocol_UDP_pct,31.17%
+protocol_ICMP_count,450
+protocol_ICMP_pct,11.69%
+attack_SYN_FLOOD_alerts,6
+attack_SYN_FLOOD_ips,2
+attack_SYN_FLOOD_max_pps,267
+attack_SYN_FLOOD_severity,MEDIUM
+attack_UDP_FLOOD_alerts,3
+attack_UDP_FLOOD_ips,1
+attack_UDP_FLOOD_max_pps,400
+attack_UDP_FLOOD_severity,MEDIUM
+attack_ICMP_FLOOD_alerts,3
+attack_ICMP_FLOOD_ips,1
+attack_ICMP_FLOOD_max_pps,134
+attack_ICMP_FLOOD_severity,MEDIUM
+attack_HTTP_FLOOD_alerts,3
+attack_HTTP_FLOOD_ips,1
+attack_HTTP_FLOOD_max_pps,167
+attack_HTTP_FLOOD_severity,MEDIUM

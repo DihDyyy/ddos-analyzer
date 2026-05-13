@@ -1,0 +1,16 @@
+metric,value
+tool_name,DDoS PCAP Analyzer
+tool_version,1.0.0
+report_time,2026-05-13 15:41:36
+analyzed_file,C:\Users\AD\.gemini\antigravity\scratch\ddos-analyzer\uploads\upload_1778661696_test.pcapng
+total_packets,4
+total_bytes,360
+capture_duration_s,32.25
+unique_src_ips,2
+unique_dst_ips,2
+avg_pps,2.0
+max_pps,2
+overall_risk_level,SAFE
+total_alerts,0
+protocol_UDP_count,4
+protocol_UDP_pct,100.0%

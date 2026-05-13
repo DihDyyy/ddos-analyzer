@@ -1,0 +1,418 @@
+{
+  "metadata": {
+    "tool_name": "DDoS PCAP Analyzer",
+    "tool_version": "1.0.0",
+    "report_generated_at": "2026-05-13 14:06:06",
+    "analyzed_file": "sample_ddos.pcap",
+    "file_size": "1.1 MB"
+  },
+  "capture_info": {
+    "total_packets": 3850,
+    "capture_duration_seconds": 49.5,
+    "total_bytes": 1070922,
+    "total_bytes_formatted": "1.0 MB",
+    "avg_packet_size": 278.16,
+    "unique_src_ips": 24,
+    "unique_dst_ips": 1,
+    "unique_dst_ports": 1189,
+    "start_time": "2026-05-13 13:59:53",
+    "end_time": "2026-05-13 14:00:43"
+  },
+  "protocol_distribution": {
+    "TCP": {
+      "count": 2200,
+      "percentage": 57.14
+    },
+    "UDP": {
+      "count": 1200,
+      "percentage": 31.17
+    },
+    "ICMP": {
+      "count": 450,
+      "percentage": 11.69
+    }
+  },
+  "packet_rate": {
+    "avg_pps": 87.5,
+    "max_pps": 507,
+    "min_pps": 2
+  },
+  "top_source_ips": [
+    {
+      "ip": "172.16.0.100",
+      "count": 1200,
+      "percentage": 31.17,
+      "protocols": {
+        "UDP": 1200
+      }
+    },
+    {
+      "ip": "172.16.0.50",
+      "count": 800,
+      "percentage": 20.78,
+      "protocols": {
+        "TCP": 800
+      }
+    },
+    {
+      "ip": "172.16.0.51",
+      "count": 500,
+      "percentage": 12.99,
+      "protocols": {
+        "TCP": 500
+      }
+    },
+    {
+      "ip": "172.16.0.150",
+      "count": 500,
+      "percentage": 12.99,
+      "protocols": {
+        "TCP": 500
+      }
+    },
+    {
+      "ip": "172.16.0.200",
+      "count": 400,
+      "percentage": 10.39,
+      "protocols": {
+        "ICMP": 400
+      }
+    },
+    {
+      "ip": "10.0.0.10",
+      "count": 38,
+      "percentage": 0.99,
+      "protocols": {
+        "TCP": 34,
+        "ICMP": 4
+      }
+    },
+    {
+      "ip": "10.0.0.13",
+      "count": 36,
+      "percentage": 0.94,
+      "protocols": {
+        "TCP": 36
+      }
+    },
+    {
+      "ip": "10.0.0.14",
+      "count": 35,
+      "percentage": 0.91,
+      "protocols": {
+        "TCP": 32,
+        "ICMP": 3
+      }
+    },
+    {
+      "ip": "10.0.0.2",
+      "count": 33,
+      "percentage": 0.86,
+      "protocols": {
+        "TCP": 30,
+        "ICMP": 3
+      }
+    },
+    {
+      "ip": "10.0.0.19",
+      "count": 27,
+      "percentage": 0.7,
+      "protocols": {
+        "TCP": 22,
+        "ICMP": 5
+      }
+    }
+  ],
+  "top_destination_ports": [
+    {
+      "port": 80,
+      "count": 1536,
+      "percentage": 45.18
+    },
+    {
+      "port": 443,
+      "count": 537,
+      "percentage": 15.79
+    },
+    {
+      "port": 3306,
+      "count": 49,
+      "percentage": 1.44
+    },
+    {
+      "port": 22,
+      "count": 42,
+      "percentage": 1.24
+    },
+    {
+      "port": 8080,
+      "count": 36,
+      "percentage": 1.06
+    },
+    {
+      "port": 3797,
+      "count": 2,
+      "percentage": 0.06
+    },
+    {
+      "port": 47891,
+      "count": 2,
+      "percentage": 0.06
+    },
+    {
+      "port": 50350,
+      "count": 2,
+      "percentage": 0.06
+    },
+    {
+      "port": 54848,
+      "count": 2,
+      "percentage": 0.06
+    },
+    {
+      "port": 19211,
+      "count": 2,
+      "percentage": 0.06
+    }
+  ],
+  "http_statistics": {
+    "methods": {
+      "POST": 100,
+      "GET": 400
+    },
+    "top_uris": [
+      {
+        "uri": "/",
+        "count": 104
+      },
+      {
+        "uri": "/admin",
+        "count": 101
+      },
+      {
+        "uri": "/api/data",
+        "count": 100
+      },
+      {
+        "uri": "/login",
+        "count": 100
+      },
+      {
+        "uri": "/search?q=test",
+        "count": 95
+      }
+    ],
+    "total_requests": 500
+  },
+  "detection_thresholds": {
+    "syn_flood": 100,
+    "udp_flood": 200,
+    "icmp_flood": 50,
+    "http_flood": 50
+  },
+  "overall_risk_level": "MEDIUM",
+  "attack_summary": {
+    "SYN_FLOOD": {
+      "display_name": "🔴 SYN Flood (Layer 4)",
+      "description": "Gửi lượng lớn TCP SYN packets để làm cạn kiệt tài nguyên server",
+      "total_alerts": 6,
+      "unique_source_ips": 2,
+      "source_ips": [
+        "172.16.0.50",
+        "172.16.0.51"
+      ],
+      "max_packets_per_second": 267,
+      "max_severity": "MEDIUM",
+      "threshold_used": 100
+    },
+    "UDP_FLOOD": {
+      "display_name": "🟠 UDP Flood (Layer 4)",
+      "description": "Gửi lượng lớn UDP packets đến các port ngẫu nhiên trên target",
+      "total_alerts": 3,
+      "unique_source_ips": 1,
+      "source_ips": [
+        "172.16.0.100"
+      ],
+      "max_packets_per_second": 400,
+      "max_severity": "MEDIUM",
+      "threshold_used": 200
+    },
+    "ICMP_FLOOD": {
+      "display_name": "🟡 ICMP Flood (Layer 3)",
+      "description": "Gửi lượng lớn ICMP Echo Request (ping) để gây nghẽn bandwidth",
+      "total_alerts": 3,
+      "unique_source_ips": 1,
+      "source_ips": [
+        "172.16.0.200"
+      ],
+      "max_packets_per_second": 134,
+      "max_severity": "MEDIUM",
+      "threshold_used": 50
+    },
+    "HTTP_FLOOD": {
+      "display_name": "🟣 HTTP Flood (Layer 7)",
+      "description": "Gửi lượng lớn HTTP requests hợp lệ để quá tải web server",
+      "total_alerts": 3,
+      "unique_source_ips": 1,
+      "source_ips": [
+        "172.16.0.150"
+      ],
+      "max_packets_per_second": 167,
+      "max_severity": "MEDIUM",
+      "threshold_used": 50
+    }
+  },
+  "alerts": [
+    {
+      "attack_type": "SYN_FLOOD",
+      "source_ip": "172.16.0.50",
+      "time_slot_second": 5,
+      "packet_count": 267,
+      "threshold": 100,
+      "ratio": 2.67,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "SYN_FLOOD",
+      "source_ip": "172.16.0.51",
+      "time_slot_second": 5,
+      "packet_count": 200,
+      "threshold": 100,
+      "ratio": 2.0,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "SYN_FLOOD",
+      "source_ip": "172.16.0.51",
+      "time_slot_second": 6,
+      "packet_count": 200,
+      "threshold": 100,
+      "ratio": 2.0,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "SYN_FLOOD",
+      "source_ip": "172.16.0.50",
+      "time_slot_second": 6,
+      "packet_count": 267,
+      "threshold": 100,
+      "ratio": 2.67,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "SYN_FLOOD",
+      "source_ip": "172.16.0.50",
+      "time_slot_second": 7,
+      "packet_count": 266,
+      "threshold": 100,
+      "ratio": 2.66,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "UDP_FLOOD",
+      "source_ip": "172.16.0.100",
+      "time_slot_second": 10,
+      "packet_count": 400,
+      "threshold": 200,
+      "ratio": 2.0,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "UDP_FLOOD",
+      "source_ip": "172.16.0.100",
+      "time_slot_second": 11,
+      "packet_count": 400,
+      "threshold": 200,
+      "ratio": 2.0,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "UDP_FLOOD",
+      "source_ip": "172.16.0.100",
+      "time_slot_second": 12,
+      "packet_count": 400,
+      "threshold": 200,
+      "ratio": 2.0,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "ICMP_FLOOD",
+      "source_ip": "172.16.0.200",
+      "time_slot_second": 15,
+      "packet_count": 134,
+      "threshold": 50,
+      "ratio": 2.68,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "ICMP_FLOOD",
+      "source_ip": "172.16.0.200",
+      "time_slot_second": 16,
+      "packet_count": 133,
+      "threshold": 50,
+      "ratio": 2.66,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "ICMP_FLOOD",
+      "source_ip": "172.16.0.200",
+      "time_slot_second": 17,
+      "packet_count": 133,
+      "threshold": 50,
+      "ratio": 2.66,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "HTTP_FLOOD",
+      "source_ip": "172.16.0.150",
+      "time_slot_second": 20,
+      "packet_count": 167,
+      "threshold": 50,
+      "ratio": 3.34,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "HTTP_FLOOD",
+      "source_ip": "172.16.0.150",
+      "time_slot_second": 21,
+      "packet_count": 167,
+      "threshold": 50,
+      "ratio": 3.34,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "HTTP_FLOOD",
+      "source_ip": "172.16.0.150",
+      "time_slot_second": 22,
+      "packet_count": 166,
+      "threshold": 50,
+      "ratio": 3.32,
+      "severity": "MEDIUM",
+      "detection_time": "2026-05-13 14:06:06"
+    },
+    {
+      "attack_type": "SYN_FLOOD",
+      "source_ip": "172.16.0.51",
+      "time_slot_second": 7,
+      "packet_count": 100,
+      "threshold": 100,
+      "ratio": 1.0,
+      "severity": "LOW",
+      "detection_time": "2026-05-13 14:06:06"
+    }
+  ],
+  "total_alerts": 15
+}

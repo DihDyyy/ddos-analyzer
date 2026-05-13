@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "tool_name": "DDoS PCAP Analyzer",
+    "tool_version": "1.0.0",
+    "report_generated_at": "2026-05-13 15:41:36",
+    "analyzed_file": "C:\\Users\\AD\\.gemini\\antigravity\\scratch\\ddos-analyzer\\uploads\\upload_1778661696_test.pcapng",
+    "file_size": "3.5 KB"
+  },
+  "capture_info": {
+    "total_packets": 4,
+    "capture_duration_seconds": 32.25,
+    "total_bytes": 360,
+    "total_bytes_formatted": "360.0 B",
+    "avg_packet_size": 90.0,
+    "unique_src_ips": 2,
+    "unique_dst_ips": 2,
+    "unique_dst_ports": 3,
+    "start_time": "2026-05-13 15:37:18",
+    "end_time": "2026-05-13 15:37:50"
+  },
+  "protocol_distribution": {
+    "UDP": {
+      "count": 4,
+      "percentage": 100.0
+    }
+  },
+  "packet_rate": {
+    "avg_pps": 2.0,
+    "max_pps": 2,
+    "min_pps": 2
+  },
+  "top_source_ips": [
+    {
+      "ip": "192.168.58.130",
+      "count": 2,
+      "percentage": 50.0,
+      "protocols": {
+        "UDP": 2
+      }
+    },
+    {
+      "ip": "115.165.161.155",
+      "count": 2,
+      "percentage": 50.0,
+      "protocols": {
+        "UDP": 2
+      }
+    }
+  ],
+  "top_destination_ports": [
+    {
+      "port": 123,
+      "count": 2,
+      "percentage": 50.0
+    },
+    {
+      "port": 57204,
+      "count": 1,
+      "percentage": 25.0
+    },
+    {
+      "port": 51165,
+      "count": 1,
+      "percentage": 25.0
+    }
+  ],
+  "http_statistics": {
+    "methods": {},
+    "top_uris": [],
+    "total_requests": 0
+  },
+  "detection_thresholds": {
+    "syn_flood": 100,
+    "udp_flood": 200,
+    "icmp_flood": 50,
+    "http_flood": 50
+  },
+  "overall_risk_level": "SAFE",
+  "attack_summary": {},
+  "alerts": [],
+  "total_alerts": 0
+}
